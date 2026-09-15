@@ -1,0 +1,200 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Alumno - FIIS UNFV</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header" style="flex-direction: column; align-items: flex-start; gap: 0.8rem; padding: 1.5rem;">
+                <img src="/assets/img/logo_unfv.png" alt="UNFV" class="sidebar-logo" style="width: 100%; max-width: 160px; filter: grayscale(1) invert(1); mix-blend-mode: screen; margin-bottom: 0.5rem;">
+                <div class="sidebar-header-text" style="border-left: 2px solid #F28C28; padding-left: 0.5rem;">
+                    <p style="color: #9CA3AF; font-size: 0.85rem; font-weight: 500; margin: 0;">Estudiante</p>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul id="alumno-menu">
+                    <li><a data-target="inicio" class="active"><i data-lucide="home"></i> <span>Inicio</span></a></li>
+                    <li><a data-target="perfil"><i data-lucide="user"></i> <span>Mi perfil</span></a></li>
+                    <li><a data-target="plan"><i data-lucide="book-open"></i> <span>Mi plan de estudios</span></a></li>
+                    <li><a data-target="cursos"><i data-lucide="library"></i> <span>Cursos</span></a></li>
+                    <li><a data-target="horarios"><i data-lucide="clock"></i> <span>Horarios</span></a></li>
+                    <li><a data-target="matricula"><i data-lucide="edit-3"></i> <span>Matrícula</span></a></li>
+                    <li><a data-target="mi-horario"><i data-lucide="calendar"></i> <span>Mi horario</span></a></li>
+                    <li><a data-target="reportes"><i data-lucide="bar-chart-2"></i> <span>Reportes</span></a></li>
+                    <li><a data-target="configuracion"><i data-lucide="settings"></i> <span>Configuración</span></a></li>
+                    <li style="margin-top: 2rem;"><a id="logout-btn"><i data-lucide="log-out"></i> <span>Cerrar sesión</span></a></li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <main class="main-content">
+            <!-- Header -->
+            <header class="topbar">
+                <div class="topbar-search">
+                    <i data-lucide="search" style="color: #9CA3AF; width: 18px;"></i>
+                    <input type="text" placeholder="Buscar cursos, horarios...">
+                </div>
+                <div class="topbar-right">
+                    <div class="topbar-notifications">
+                        <i data-lucide="bell"></i>
+                    </div>
+                    <div class="user-profile">
+                        <img src="https://ui-avatars.com/api/?name=Alumno&background=F28C28&color=fff" alt="Avatar" class="user-avatar" id="avatar-img">
+                        <div class="user-info">
+                            <h4 id="header-user-name">Cargando...</h4>
+                            <p>Alumno</p>
+                        </div>
+                        <i data-lucide="chevron-down" style="width: 16px; color: #6B7280;"></i>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="content">
+                
+                <!-- INICIO -->
+                <section id="inicio" class="view-section active">
+                    <div id="inicio-content">
+                        <div class="loader-container"><div class="spinner"></div> Cargando...</div>
+                    </div>
+                </section>
+
+                <!-- PERFIL -->
+                <section id="perfil" class="view-section">
+                    <div class="card">
+                        <h3 style="margin-bottom: 1.5rem;">Mi Perfil</h3>
+                        <div id="perfil-content"></div>
+                    </div>
+                </section>
+
+                <!-- PLAN DE ESTUDIOS -->
+                <section id="plan" class="view-section">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+                        <div>
+                            <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Plan de estudios</h2>
+                            <p style="color: var(--text-secondary);">Selecciona tu plan de estudios y el semestre que deseas ver.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="plan-semesters" class="semesters-grid">
+                        <!-- Semesters 1 to 10 generated by JS -->
+                    </div>
+
+                    <div id="plan-content"></div>
+                </section>
+
+                <!-- CURSOS -->
+                <section id="cursos" class="view-section">
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Cursos</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Explora todos los cursos disponibles en el plan de estudios.</p>
+                    <div id="cursos-content"></div>
+                </section>
+
+                <!-- HORARIOS DISPONIBLES -->
+                <section id="horarios" class="view-section">
+                    <div class="card">
+                        <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Horarios</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Consulta los horarios de los cursos disponibles.</p>
+                        <div class="table-container" style="padding: 0; box-shadow: none; border: none;">
+                            <div id="horarios-content"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MATRICULA -->
+                <section id="matricula" class="view-section">
+                    <h2 style="font-size: 1.5rem; margin-bottom: 2rem;">Matrícula</h2>
+                    
+                    <div class="stepper">
+                        <div class="step active">
+                            <div class="step-circle">1</div>
+                            <span class="step-text">Seleccionar cursos</span>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">2</div>
+                            <span class="step-text">Seleccionar sección</span>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">3</div>
+                            <span class="step-text">Revisar matrícula</span>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">4</div>
+                            <span class="step-text">Confirmar</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem;">Selecciona los cursos que deseas matricular</h3>
+                        <div id="matricula-form-container"></div>
+                    </div>
+                </section>
+                
+                <!-- MI HORARIO -->
+                <section id="mi-horario" class="view-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Mi horario</h2>
+                            <p style="color: var(--text-secondary);">Vista semanal de tus cursos matriculados.</p>
+                        </div>
+                    </div>
+                    <div id="mi-horario-content"></div>
+                </section>
+
+                <!-- REPORTES -->
+                <section id="reportes" class="view-section">
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Reportes</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Genera y descarga tus reportes académicos.</p>
+                    
+                    <div class="cards-grid">
+                        <div class="card" style="text-align: center; padding: 2rem;">
+                            <div class="stat-card-icon" style="margin: 0 auto 1rem auto;"><i data-lucide="book"></i></div>
+                            <h4 style="margin-bottom: 0.5rem;">Reporte del Plan de Estudios</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">Consulta tu plan de estudios y cursos por semestre.</p>
+                            <button class="btn-primary" style="width: 100%;">Generar reporte</button>
+                        </div>
+                        <div class="card" style="text-align: center; padding: 2rem;">
+                            <div class="stat-card-icon" style="margin: 0 auto 1rem auto;"><i data-lucide="calendar"></i></div>
+                            <h4 style="margin-bottom: 0.5rem;">Reporte de Horario</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">Visualiza y descarga tu horario de clases.</p>
+                            <button class="btn-primary" style="width: 100%;">Generar reporte</button>
+                        </div>
+                        <div class="card" style="text-align: center; padding: 2rem;">
+                            <div class="stat-card-icon" style="margin: 0 auto 1rem auto;"><i data-lucide="file-text"></i></div>
+                            <h4 style="margin-bottom: 0.5rem;">Reporte de Matrícula</h4>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">Obtén un resumen de tus cursos matriculados.</p>
+                            <button class="btn-primary" style="width: 100%;">Generar reporte</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CONFIGURACION -->
+                <section id="configuracion" class="view-section">
+                    <div class="card">
+                        <h3>Configuración</h3>
+                        <p style="margin-top: 1rem; color: var(--text-secondary);">Opciones de configuración de cuenta. Próximamente.</p>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Inicializar iconos de Lucide
+        lucide.createIcons();
+    </script>
+    <script type="module" src="/js/alumno.js"></script>
+</body>
+</html>
+
+
