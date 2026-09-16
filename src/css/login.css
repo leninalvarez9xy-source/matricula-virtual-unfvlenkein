@@ -17,7 +17,7 @@ body {
     flex: 1.2;
     position: relative;
     clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%);
-    background-image: linear-gradient(135deg, rgba(242, 140, 40, 0.85) 0%, rgba(217, 111, 11, 0.6) 100%), url('/assets/img/bg_new.jpg');
+    background-image: linear-gradient(135deg, rgba(242, 140, 40, 0.85) 0%, rgba(217, 111, 11, 0.6) 100%), url('/src/assets/img/bg_new.jpg');
     background-size: cover;
     background-position: center;
     color: white;

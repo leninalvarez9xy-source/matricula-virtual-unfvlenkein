@@ -29,6 +29,7 @@ dist-ssr
 .env.production
 
 # Scripts temporales con claves
+scripts/
 fix_rls.js
 check_rls.js
 test_conn.js
