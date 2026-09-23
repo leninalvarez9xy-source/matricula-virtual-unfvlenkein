@@ -5,7 +5,9 @@ let currentUserData = null;
 let alumnoInfo = null;
 let periodoActivo = null;
 let planCursos = [];
+let requisitosCursos = [];
 let matriculaActual = null;
+let historialCursos = [];
 let cursosSeleccionados = [];
 let seccionesSeleccionadas = {};
 let stepActual = 1;
@@ -30,25 +32,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         await logout();
     });
 
-    // Cargar periodo activo (el mas reciente con estado ACTIVO)
-    const { data: periodos } = await supabase
-        .from('periodo_academico')
-        .select('*')
-        .eq('estado', 'ACTIVO')
-        .order('fecha_inicio', { ascending: false })
-        .limit(1);
-    if (periodos && periodos.length > 0) periodoActivo = periodos[0];
+    // Cargar datos en paralelo para mejorar el rendimiento
+    try {
+        const promises = [
+            supabase
+                .from('periodo_academico')
+                .select('*')
+                .eq('estado', 'ACTIVO')
+                .order('fecha_inicio', { ascending: false })
+                .limit(1)
+                .then(res => res, err => ({ data: [], error: err })),
+            
+            alumnoInfo && alumnoInfo.cod_plan
+                ? supabase
+                    .from('plan_curso')
+                    .select('*, curso(*)')
+                    .eq('cod_plan', alumnoInfo.cod_plan)
+                    .then(res => res, err => ({ data: [], error: err }))
+                : Promise.resolve({ data: [] }),
+                
+            alumnoInfo
+                ? supabase
+                    .from('historial_notas')
+                    .select('*')
+                    .eq('cod_alumno', alumnoInfo.cod_alumno)
+                    .then(res => res, err => ({ data: [], error: err }))
+                : Promise.resolve({ data: [] }),
+                
+            supabase
+                .from('prerequisito')
+                .select('*')
+                .then(res => res, err => ({ data: [], error: err }))
+        ];
 
-    // Cargar cursos del plan del alumno
-    if (alumnoInfo && alumnoInfo.cod_plan) {
-        const { data } = await supabase
-            .from('plan_curso')
-            .select('*, curso(*)')
-            .eq('cod_plan', alumnoInfo.cod_plan);
-        planCursos = data || [];
+        const results = await Promise.all(promises);
+        
+        const periodos = results[0]?.data;
+        const planData = results[1]?.data;
+        const historialData = results[2]?.data;
+        const reqData = results[3]?.data;
+
+        if (periodos && periodos.length > 0) periodoActivo = periodos[0];
+        planCursos = planData || [];
+        historialCursos = historialData || [];
+        requisitosCursos = reqData || [];
+    } catch (error) {
+        console.error("Error cargando datos paralelos:", error);
     }
 
-    // Cargar matrícula actual del alumno
+    // Cargar matrícula actual del alumno (depende del periodo activo)
     if (alumnoInfo && periodoActivo) {
         const { data } = await supabase
             .from('matricula')
@@ -531,6 +563,40 @@ async function renderStep(step) {
 
         container.innerHTML = '<div class="loader-container"><div class="spinner"></div></div>';
 
+        // Filtrar cursos permitidos
+        const semestreAlumno = alumnoInfo.semestre_actual || 1;
+        
+        // Mapear historial para búsquedas rápidas
+        const historialMap = {};
+        historialCursos.forEach(h => {
+            historialMap[h.cod_curso] = h.estado; // 'APROBADO', 'REPROBADO'
+        });
+
+        const cursosPermitidos = (planCursos || [])
+            .filter(pc => {
+                // 1. Matrícula anual: puede ver cursos hasta 1 ciclo por encima del actual
+                if (pc.semestre > semestreAlumno + 1) return false;
+                
+                // 2. Si ya está aprobado, no mostrar
+                if (historialMap[pc.cod_curso] === 'APROBADO') return false;
+
+                // 3. Si tiene prerrequisitos, verificar que todos estén aprobados
+                const requisitosDelCurso = requisitosCursos.filter(r => r.cod_curso === pc.cod_curso);
+                for (const req of requisitosDelCurso) {
+                    if (historialMap[req.cod_curso_req] !== 'APROBADO') {
+                        return false; // Falta aprobar un prerrequisito
+                    }
+                }
+                
+                return true;
+            })
+            .map(pc => pc.cod_curso);
+
+        if (cursosPermitidos.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-secondary);">No hay cursos permitidos para tu ciclo actual en tu plan de estudios.</p>';
+            return;
+        }
+
         const { data: secciones } = await supabase
             .from('seccion')
             .select(`
@@ -540,7 +606,8 @@ async function renderStep(step) {
                 horario_cabecera(horario_detalle(dia_semana, hora_inicio, hora_fin, tipo_clase))
             `)
             .eq('cod_periodo', periodoActivo.cod_periodo)
-            .gt('cupos_disp', 0);
+            .gt('cupos_disp', 0)
+            .in('cod_curso', cursosPermitidos);
 
         if (!secciones || secciones.length === 0) {
             container.innerHTML = '<p style="color:var(--text-secondary);">No hay cursos disponibles con cupos para este periodo.</p>';
@@ -563,7 +630,7 @@ async function renderStep(step) {
                     <p style="color:var(--text-secondary);margin-bottom:1rem;font-size:0.9rem;">Selecciona los cursos en los que deseas matricularte:</p>
                     ${Object.entries(porCurso).map(([cod, info]) => `
                         <div class="card" style="margin-bottom:0.75rem;padding:1rem;display:flex;align-items:center;gap:1rem;border-left:4px solid var(--primary-orange);">
-                            <input type="checkbox" value="${cod}" id="curso-cb-${cod}" onchange="actualizarResumen()" style="width:18px;height:18px;accent-color:var(--primary-orange);cursor:pointer;flex-shrink:0;">
+                            <input type="checkbox" value="${cod}" id="curso-cb-${cod}" onchange="actualizarResumen(this)" style="width:18px;height:18px;accent-color:var(--primary-orange);cursor:pointer;flex-shrink:0;">
                             <label for="curso-cb-${cod}" style="cursor:pointer;flex:1;">
                                 <div style="font-weight:600;font-size:0.9rem;">${cod} - ${info.curso?.nom_curso || '—'}</div>
                                 <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.2rem;">${info.curso?.creditos || 0} créditos • ${info.secciones.length} sección(es)</div>
@@ -705,15 +772,48 @@ async function renderStep(step) {
     }
 }
 
-window.actualizarResumen = function() {
-    const checks = document.querySelectorAll('input[type=checkbox]:checked');
-    cursosSeleccionados = Array.from(checks).map(c => c.value);
+window.actualizarResumen = function(checkboxEl) {
+    let checks = document.querySelectorAll('input[type=checkbox]:checked');
+    let seleccionadosTemp = Array.from(checks).map(c => c.value);
     const porCurso = window._seccionesMatricula || {};
-    let creditos = 0;
-    cursosSeleccionados.forEach(cod => creditos += (porCurso[cod]?.curso?.creditos || 0));
+    
+    let creditosPorSemestre = {};
+    let totalCreditos = 0;
+    let semestreExcedido = null;
+
+    seleccionadosTemp.forEach(cod => {
+        const cred = porCurso[cod]?.curso?.creditos || 0;
+        totalCreditos += cred;
+        
+        // Buscar el semestre del curso en planCursos
+        const pc = planCursos.find(p => p.cod_curso === cod);
+        const semestre = pc ? pc.semestre : 1;
+
+        if (!creditosPorSemestre[semestre]) creditosPorSemestre[semestre] = 0;
+        creditosPorSemestre[semestre] += cred;
+
+        if (creditosPorSemestre[semestre] > 21) {
+            semestreExcedido = semestre;
+        }
+    });
+
+    // Validar límite de 21 créditos por semestre exacto
+    if (semestreExcedido) {
+        alert('No puedes matricularte en más de 21 créditos en el ciclo ' + semestreExcedido + '.');
+        if (checkboxEl) {
+            checkboxEl.checked = false; // Deshacer la selección
+            // Recalcular
+            checks = document.querySelectorAll('input[type=checkbox]:checked');
+            seleccionadosTemp = Array.from(checks).map(c => c.value);
+            totalCreditos = 0;
+            seleccionadosTemp.forEach(cod => totalCreditos += (porCurso[cod]?.curso?.creditos || 0));
+        }
+    }
+
+    cursosSeleccionados = seleccionadosTemp;
 
     document.getElementById('resumen-count').textContent = cursosSeleccionados.length;
-    document.getElementById('resumen-creditos').textContent = creditos;
+    document.getElementById('resumen-creditos').textContent = totalCreditos;
 
     const lista = document.getElementById('resumen-lista');
     if (cursosSeleccionados.length === 0) {

@@ -1,0 +1,1 @@
+﻿const fs = require('fs'); const file = 'c:/Users/luisa/OneDrive/Desktop/wbd de lenin/matricula-virtual-unfvlenkein/instalacion_completa.sql'; let content = fs.readFileSync(file, 'utf8'); content = content.replace(/\uFFFD/g, ''); fs.writeFileSync(file, content, 'utf8'); console.log('Replaced all FFFD characters');

@@ -46,6 +46,15 @@ export async function checkAuth(requiredRole = null) {
             
         if (alumnoError && alumnoError.code !== 'PGRST116') {
             console.error("Error obteniendo datos del alumno:", alumnoError);
+            alert("Error DB (Alumno): " + JSON.stringify(alumnoError));
+        } else if (!alumnoData) {
+            // Test if it's a join issue or RLS issue
+            const { data: testData, error: testError } = await supabase.from('alumno').select('*').eq('cod_alumno', userData.codigo);
+            if (testError || !testData || testData.length === 0) {
+                alert("Error DB (Test Alumno vacio o RLS): " + JSON.stringify(testError || "No data"));
+            } else {
+                alert("Error DB: El alumno existe pero falló el join con escuela/plan_estudio. Verifica la consola.");
+            }
         }
         
         userData.alumnoInfo = alumnoData;

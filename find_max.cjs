@@ -1,0 +1,1 @@
+const fs = require('fs'); const content = fs.readFileSync('c:/Users/luisa/OneDrive/Desktop/wbd de lenin/matricula-virtual-unfvlenkein/instalacion_completa.sql', 'utf8'); const regex = /INSERT INTO seccion .*?cod_curso.*?\n(.*?)(?=INSERT|-- =================)/gs; console.log('Checking');
