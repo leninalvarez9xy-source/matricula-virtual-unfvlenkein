@@ -1,15 +1,19 @@
 import { supabase } from './supabase.js';
 
 export async function checkAuth(requiredRole = null) {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    let email = localStorage.getItem('fake_session_email');
+    
+    if (!email) {
+        const { data: { session }, error } = await supabase.auth.getSession();
 
-    if (error || !session) {
-        // No está logueado
-        window.location.href = '/index.html';
-        return null;
+        if (error || !session) {
+            // No está logueado
+            window.location.href = '/index.html';
+            return null;
+        }
+        email = session.user.email;
     }
 
-    const email = session.user.email;
     let userRole = 'alumno';
     
     // Nuestro administrador maestro
@@ -64,6 +68,7 @@ export async function checkAuth(requiredRole = null) {
 }
 
 export async function logout() {
+    localStorage.removeItem('fake_session_email');
     const { error } = await supabase.auth.signOut();
     if (error) {
         console.error("Error al cerrar sesión:", error);

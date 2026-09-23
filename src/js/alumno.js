@@ -318,6 +318,18 @@ async function loadCursos() {
     if (!container) return;
     container.innerHTML = '<div class="loader-container"><div class="spinner"></div></div>';
 
+    if (alumnoInfo && alumnoInfo.cod_plan === 'PLAN2010') {
+        container.innerHTML = `
+            <div style="text-align:center;padding:3rem;" class="card">
+                <div style="font-size:4rem;margin-bottom:1rem;">📄</div>
+                <h3 style="color:var(--navy-dark);margin-bottom:0.5rem;">Malla 2010 detectada</h3>
+                <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Los cursos que se muestran a continuación corresponden a la Malla 2019. Como perteneces a la Malla 2010, debes <strong>convalidar tus cursos</strong> antes de poder matricularte.</p>
+                <button class="btn-primary" style="margin-top:0.5rem;" onclick="document.querySelector('[data-target=matricula]').click()">Ir a Convalidación</button>
+            </div>
+        `;
+        return;
+    }
+
     const { data: cursos, error } = await supabase
         .from('plan_curso')
         .select('*, curso(*)')
@@ -543,6 +555,18 @@ async function renderStep(step) {
     if (!container) return;
 
     if (step === 1) {
+        if (alumnoInfo && alumnoInfo.cod_plan === 'PLAN2010') {
+             container.innerHTML = `
+                <div style="text-align:center;padding:3rem;">
+                    <div style="font-size:4rem;margin-bottom:1rem;">⚠️</div>
+                    <h3 style="color:#F59E0B;margin-bottom:0.5rem;">Convalidación de Cursos Pendiente</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Perteneces a la <strong>Malla 2010</strong>. Para poder matricularte en el periodo actual, debes realizar un proceso de convalidación hacia la <strong>Malla 2019</strong>.</p>
+                    <button class="btn-primary" style="margin-top:1.5rem; background-color: #F59E0B; border-color: #F59E0B;">Iniciar trámite de convalidación</button>
+                </div>
+             `;
+             return;
+        }
+
         // Verificar si ya tiene matrícula
         if (matriculaActual) {
             container.innerHTML = `
@@ -792,14 +816,14 @@ window.actualizarResumen = function(checkboxEl) {
         if (!creditosPorSemestre[semestre]) creditosPorSemestre[semestre] = 0;
         creditosPorSemestre[semestre] += cred;
 
-        if (creditosPorSemestre[semestre] > 21) {
+        if (creditosPorSemestre[semestre] > 22) {
             semestreExcedido = semestre;
         }
     });
 
-    // Validar límite de 21 créditos por semestre exacto
-    if (semestreExcedido) {
-        alert('No puedes matricularte en más de 21 créditos en el ciclo ' + semestreExcedido + '.');
+    // Validar límite de 22 créditos por semestre exacto y 44 en total
+    if (semestreExcedido || totalCreditos > 44) {
+        alert('Te sobrepasaste de créditos. Si quieres matricularte solicita extensión de créditos.');
         if (checkboxEl) {
             checkboxEl.checked = false; // Deshacer la selección
             // Recalcular
