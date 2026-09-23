@@ -649,6 +649,9 @@ async function renderStep(step) {
 
         container.innerHTML = `
             <h3 style="margin-bottom:1rem;">Selecciona los cursos que deseas matricular</h3>
+            <div style="background-color:#FEF3C7; color:#92400E; padding:1rem; border-radius:8px; border-left:4px solid #F59E0B; margin-bottom:1.5rem; font-size:0.9rem;">
+                <strong>Nota:</strong> Solo te puedes matricular en un máximo de <strong>22 créditos por cada semestre</strong> (y un tope global de 44 créditos).
+            </div>
             <div style="display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap;">
                 <div style="flex:2;min-width:280px;">
                     <p style="color:var(--text-secondary);margin-bottom:1rem;font-size:0.9rem;">Selecciona los cursos en los que deseas matricularte:</p>
