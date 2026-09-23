@@ -1,4 +1,4 @@
-﻿import { supabase } from './supabase.js';
+import { supabase } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Si ya está logueado, redirigir
@@ -45,10 +45,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            // El truco para no tocar la BD: convertimos el código en correo
-            const email = codigo === 'admin' 
-                ? 'admin@fiis.unfv.edu.pe' 
-                : `${codigo}@fiis.unfv.edu.pe`;
+            // Convertir a correo institucional si solo se ingresó el código
+            let email = codigo;
+            if (codigo === 'admin') {
+                email = 'admin@fiis.unfv.edu.pe';
+            } else if (!codigo.includes('@')) {
+                email = `${codigo}@fiis.unfv.edu.pe`;
+            }
 
             // Intentar iniciar sesión
             const { data, error } = await supabase.auth.signInWithPassword({
@@ -65,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Inicio de sesión exitoso, verificar rol
-            if (email === 'admin@fiis.unfv.edu.pe') {
+            if (email.startsWith('admin@')) {
                 window.location.href = '/dashboard-admin.html';
             } else {
                 window.location.href = '/dashboard-alumno.html';

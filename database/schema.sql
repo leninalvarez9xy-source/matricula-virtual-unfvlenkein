@@ -151,3 +151,4 @@ CREATE POLICY "Lectura publica horario" ON public.horario FOR SELECT USING (true
 CREATE POLICY "Lectura publica matricula" ON public.matricula FOR SELECT USING (true);
 CREATE POLICY "Lectura publica detalle_matricula" ON public.detalle_matricula FOR SELECT USING (true);
 CREATE POLICY "Lectura publica auditoria" ON public.auditoria_matricula FOR SELECT USING (true);
+
